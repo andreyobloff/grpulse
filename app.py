@@ -1,1 +1,1 @@
-﻿print('GreenPulse CI/CD check passed')
+﻿print('GreenPulse container started successfully')
