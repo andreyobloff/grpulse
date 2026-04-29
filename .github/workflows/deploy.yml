@@ -1,0 +1,39 @@
+﻿name: Build and Deploy GreenPulse Artifact
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run application
+        run: python src/greenpulse_app.py
+
+      - name: Run tests
+        run: python tests/test_greenpulse.py
+
+      - name: Prepare deployment package
+        run: |
+          mkdir -p dist
+          cp -r src dist/src
+          cp VERSION.txt dist/VERSION.txt
+          cp README.md dist/README.md
+          echo "GreenPulse deployment package prepared successfully" > dist/deployment-log.txt
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: greenpulse-deployment-package
+          path: dist/
