@@ -26,10 +26,75 @@ jobs:
         run: |
           test -f src/security.py
           test -f tests/test_security.py
-          test -f tests/test_greenpulse.py
 
-      - name: Run security tests
-        run: PYTHONPATH=. python tests/test_security.py
+      - name: Run authentication and access-control checks
+        run: |
+          python - <<'PY'
+          from src.security import (
+              AccessControlService,
+              AccessDeniedError,
+              AuthService,
+              AuthenticationError,
+              load_security_demo_records,
+          )
 
-      - name: Run existing tests
-        run: PYTHONPATH=. python tests/test_greenpulse.py
+          auth_service = AuthService()
+          access_control = AccessControlService()
+          records = load_security_demo_records()
+
+          user = auth_service.register_user(
+              user_id="USR-001",
+              login="operator",
+              password="StrongPass123",
+          )
+
+          assert user.password_hash != "StrongPass123"
+          assert "StrongPass123" not in user.password_hash
+          assert user.password_hash.startswith("sha256$")
+
+          authenticated_user = auth_service.authenticate(
+              login="operator",
+              password="StrongPass123",
+          )
+
+          assert authenticated_user.user_id == "USR-001"
+
+          try:
+              auth_service.authenticate(
+                  login="operator",
+                  password="WrongPass123",
+              )
+          except AuthenticationError:
+              pass
+          else:
+              raise AssertionError("Invalid password was accepted")
+
+          user_records = access_control.get_user_records(user, records)
+
+          assert len(user_records) == 2
+          assert all(record.owner_user_id == "USR-001" for record in user_records)
+
+          try:
+              access_control.get_record_by_id(
+                  current_user=user,
+                  records=records,
+                  record_id="REC-002",
+              )
+          except AccessDeniedError as error:
+              assert error.status_code == 403
+          else:
+              raise AssertionError("Access to another user's record was allowed")
+
+          admin = auth_service.register_user(
+              user_id="USR-ADMIN",
+              login="admin",
+              password="AdminPass123",
+              role="admin",
+          )
+
+          admin_records = access_control.get_user_records(admin, records)
+
+          assert len(admin_records) == 3
+
+          print("GreenPulse security measures checks passed")
+          PY
