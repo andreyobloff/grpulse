@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -19,7 +20,7 @@ jobs:
           python-version: '3.11'
 
       - name: Run application
-        run: python src/greenpulse_app.py
+        run: python -m src.greenpulse_app
 
       - name: Run tests
         run: python tests/test_greenpulse.py
@@ -28,8 +29,9 @@ jobs:
         run: |
           mkdir -p dist
           cp -r src dist/src
-          cp VERSION.txt dist/VERSION.txt
+          cp -r tests dist/tests
           cp README.md dist/README.md
+          cp VERSION.txt dist/VERSION.txt
           echo "GreenPulse deployment package prepared successfully" > dist/deployment-log.txt
 
       - name: Upload deployment artifact

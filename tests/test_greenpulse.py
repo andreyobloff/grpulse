@@ -1,23 +1,7 @@
-﻿import subprocess
-import sys
-
-from src.demo_data import load_demo_readings
+﻿from src.demo_data import load_demo_readings
 from src.models import QualityStatus
 from src.services import GreenPulseDataQualityService
-
-
-def test_application_runs_successfully() -> None:
-    result = subprocess.run(
-        [sys.executable, "-m", "src.greenpulse_app"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert result.returncode == 0
-    assert "GreenPulse data quality review" in result.stdout
-    assert "city_status=critical" in result.stdout
-    assert "validation_issues=2" in result.stdout
+from src.greenpulse_app import format_station_summary
 
 
 def test_city_status_is_calculated_correctly() -> None:
@@ -35,8 +19,29 @@ def test_validation_detects_invalid_readings() -> None:
     assert len(issues) == 2
 
 
+def test_station_report_is_created() -> None:
+    service = GreenPulseDataQualityService()
+    readings = load_demo_readings()
+    report = service.build_station_report(readings)
+
+    assert len(report) == 4
+    assert report[0].station_id == "MSK-001"
+
+
+def test_station_summary_formatting() -> None:
+    service = GreenPulseDataQualityService()
+    readings = load_demo_readings()
+    summary = service.calculate_station_summary("MSK-001", readings)
+    formatted_summary = format_station_summary(summary)
+
+    assert "station=MSK-001" in formatted_summary
+    assert "district=ЦАО" in formatted_summary
+    assert "status=normal" in formatted_summary
+
+
 if __name__ == "__main__":
-    test_application_runs_successfully()
     test_city_status_is_calculated_correctly()
     test_validation_detects_invalid_readings()
-    print("GreenPulse refactoring tests passed")
+    test_station_report_is_created()
+    test_station_summary_formatting()
+    print("GreenPulse tests passed")

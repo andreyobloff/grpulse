@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,14 +24,14 @@ jobs:
 
       - name: Check project files
         run: |
-          echo "Проверка структуры проекта GreenPulse"
-          ls -la
           test -f README.md
-          test -f feature.txt
-          test -f app.py
+          test -f src/greenpulse_app.py
+          test -f src/models.py
+          test -f src/services.py
+          test -f tests/test_greenpulse.py
 
-      - name: Run Python script
-        run: python app.py
+      - name: Run application
+        run: python -m src.greenpulse_app
 
-      - name: Run tests imitation
-        run: echo "Тесты проекта GreenPulse успешно выполнены"
+      - name: Run tests
+        run: python tests/test_greenpulse.py
