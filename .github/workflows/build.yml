@@ -34,4 +34,4 @@ jobs:
         run: python -m src.greenpulse_app
 
       - name: Run tests
-        run: python tests/test_greenpulse.py
+        run: python -m tests.test_greenpulse

@@ -23,7 +23,7 @@ jobs:
         run: python -m src.greenpulse_app
 
       - name: Run tests
-        run: python tests/test_greenpulse.py
+        run: python -m tests.test_greenpulse
 
       - name: Prepare deployment package
         run: |
@@ -31,7 +31,7 @@ jobs:
           cp -r src dist/src
           cp -r tests dist/tests
           cp README.md dist/README.md
-          cp VERSION.txt dist/VERSION.txt
+          if [ -f VERSION.txt ]; then cp VERSION.txt dist/VERSION.txt; fi
           echo "GreenPulse deployment package prepared successfully" > dist/deployment-log.txt
 
       - name: Upload deployment artifact
