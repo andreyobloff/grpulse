@@ -51,7 +51,7 @@ class PasswordHasher:
             self.iterations,
         ).hex()
 
-        return f"{self.algorithm}"
+        return f"{self.algorithm}${self.iterations}${salt}${digest}"
 
     def verify_password(
         self,
