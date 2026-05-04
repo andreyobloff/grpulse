@@ -1,0 +1,29 @@
+﻿name: GreenPulse Security Measures Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  security-measures:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run security tests
+        run: python -m tests.test_security
+
+      - name: Run existing tests
+        run: python -m tests.test_greenpulse
