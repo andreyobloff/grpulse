@@ -22,4 +22,4 @@
 https://github.com/andreyobloff/grpulse
 
 Ссылка на доску:
-https://github.com/users/andreyobloff/projects/
+https://github.com/users/andreyobloff/projects/1
