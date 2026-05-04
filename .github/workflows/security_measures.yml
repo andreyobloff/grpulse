@@ -22,8 +22,14 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Check security files
+        run: |
+          test -f src/security.py
+          test -f tests/test_security.py
+          test -f tests/test_greenpulse.py
+
       - name: Run security tests
-        run: python -m tests.test_security
+        run: PYTHONPATH=. python tests/test_security.py
 
       - name: Run existing tests
-        run: python -m tests.test_greenpulse
+        run: PYTHONPATH=. python tests/test_greenpulse.py
