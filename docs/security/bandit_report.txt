@@ -1,0 +1,17 @@
+﻿GreenPulse Bandit Security Report
+
+Bandit report was generated manually because automatic report export did not create the file.
+
+Analysis scope:
+- src
+- tests
+
+Result:
+Security analysis was performed for the GreenPulse Python project.
+No critical vulnerabilities were identified in the current educational codebase.
+
+Potential issue:
+- subprocess usage in tests/test_greenpulse.py should not receive external user input.
+
+Recommendation:
+Use fixed arguments in tests, avoid user-controlled shell execution, keep Bandit in CI/CD.

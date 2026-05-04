@@ -1,0 +1,13 @@
+﻿{
+  "project": "GreenPulse",
+  "tool": "Bandit",
+  "scope": ["src", "tests"],
+  "status": "completed",
+  "summary": "No critical vulnerabilities identified in the current educational Python codebase.",
+  "recommendations": [
+    "Do not pass user input to subprocess.",
+    "Use parameterized database queries in future database layer.",
+    "Use RBAC and authorization checks in future API layer.",
+    "Store secrets only in GitHub Secrets or secure secret storage."
+  ]
+}
