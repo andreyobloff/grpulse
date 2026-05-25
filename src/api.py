@@ -7,6 +7,12 @@ import json
 from typing import Any
 from uuid import uuid4
 
+from src.integrations import (
+    IntegrationEventFactory,
+    NotificationClient,
+    build_smtp_client_from_environment,
+)
+
 
 API_KEY = "greenpulse-demo-key"
 ALLOWED_SENSOR_TYPES = {
@@ -65,9 +71,11 @@ class GreenPulseApiController:
         self,
         api_key: str = API_KEY,
         storage: GreenPulseApiStorage | None = None,
+        notifier: NotificationClient | None = None,
     ) -> None:
         self.api_key = api_key
         self.storage = storage or GreenPulseApiStorage()
+        self.notifier = notifier
 
     def create_reading(
         self,
@@ -95,10 +103,15 @@ class GreenPulseApiController:
         )
 
         self.storage.add_reading(reading)
+        notification = self._send_creation_notification(reading)
 
         return ApiResponse(
             status_code=201,
-            body={"message": "reading created", "reading": asdict(reading)},
+            body={
+                "message": "reading created",
+                "reading": asdict(reading),
+                "notification": notification,
+            },
         )
 
     def get_readings(
@@ -137,6 +150,29 @@ class GreenPulseApiController:
             status_code=200,
             body={"message": "reading deleted", "record_id": record_id},
         )
+
+    def _send_creation_notification(
+        self,
+        reading: ApiReading,
+    ) -> dict[str, Any]:
+        if self.notifier is None:
+            return {
+                "provider": "smtp",
+                "sent": False,
+                "skipped": True,
+                "detail": "notifier not configured",
+            }
+
+        message = IntegrationEventFactory.reading_created(
+            record_id=reading.record_id,
+            station_id=reading.station_id,
+            district=reading.district,
+            sensor_type=reading.sensor_type,
+            value=reading.value,
+        )
+        result = self.notifier.send(message)
+
+        return asdict(result)
 
     def _validate_api_key(
         self,
@@ -187,7 +223,9 @@ class GreenPulseApiController:
 
 
 class GreenPulseRequestHandler(BaseHTTPRequestHandler):
-    controller = GreenPulseApiController()
+    controller = GreenPulseApiController(
+        notifier=build_smtp_client_from_environment(),
+    )
 
     def do_GET(self) -> None:
         if self.path == "/api/readings":
